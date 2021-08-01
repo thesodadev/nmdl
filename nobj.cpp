@@ -6,8 +6,10 @@
 #include <map>
 #include <string>
 #include <sstream>
-#include "steroids.h"
 
+#include <st/string.h>
+#include <st/common.h>
+#include <st/math.h>
 
 // Convert float to vertex 4.12 fixed format
 inline int16_t floatToV16(float value) { return (int16_t)((value) * (1 << 12)); }
@@ -57,44 +59,17 @@ std::string toString(EFaceType face)
     return "error";
 }
 
-inline const char* findNext(const char* start, const char* end, char target)
-{
-    const char* p = start;
-
-    while (*p != target && p < end) p++;
-
-    return p != end ? p : nullptr;
-}
-
-inline uint64_t distance(const char* start, const char* end) { return (uint64_t)(end - start); }
-
-inline uint32_t count(const char* start, const char* end, char target) 
-{
-    const char* p = start;
-
-    uint32_t c = 0;
-    while (p <= end)
-    {
-        if (*p == target) c++;
-        p++;
-    }
-
-    return c;
-}
-
-inline bool isInBounds(const char* p, const char* end, uint32_t offset = 0) { return p + offset <= end; }
-
 inline bool readVector3Df(const char* str, const char* end, Vector3Df& out_vector)
 {
     const char* p = str;
 
-    if (!ST::strToFloat(p, distance(p, end) + 1, out_vector.x))
+    if (!ST::String::toFloat(p, end, out_vector.x))
     {
         std::cerr << "Cannot convert to float" << std::endl;
         return false;
     }
 
-    const char* next_space = findNext(p, end, ' ');
+    const char* next_space = ST::Common::findNext(p, end, ' ');
     if (!next_space)
     {
         std::cerr << "Cannot find space delimeter" << std::endl;
@@ -103,13 +78,13 @@ inline bool readVector3Df(const char* str, const char* end, Vector3Df& out_vecto
 
     p = next_space + 1;
 
-    if (!ST::strToFloat(p, distance(p, end) + 1, out_vector.y))
+    if (!ST::String::toFloat(p, end, out_vector.y))
     {
         std::cerr << "Cannot convert to float" << std::endl;
         return false;
     }
 
-    next_space = findNext(p, end, ' ');
+    next_space = ST::Common::findNext(p, end, ' ');
     if (!next_space)
     {
         std::cerr << "Cannot find space delimeter" << std::endl;
@@ -118,7 +93,7 @@ inline bool readVector3Df(const char* str, const char* end, Vector3Df& out_vecto
 
     p = next_space + 1;
 
-    if (!ST::strToFloat(p, distance(p, end) + 1, out_vector.z))
+    if (!ST::String::toFloat(p, end, out_vector.z))
     {
         std::cerr << "Cannot convert to float" << std::endl;
         return false;
@@ -131,13 +106,13 @@ inline bool readVector2Df(const char* str, const char* end, Vector2Df& out_vecto
 {
     const char* p = str;
 
-    if (!ST::strToFloat(p, distance(p, end) + 1, out_vector.x))
+    if (!ST::String::toFloat(p, end, out_vector.x))
     {
         std::cerr << "Cannot convert to float" << std::endl;
         return false;
     }
 
-    const char* next_space = findNext(p, end, ' ');
+    const char* next_space = ST::Common::findNext(p, end, ' ');
     if (!next_space)
     {
         std::cerr << "Cannot find space delimeter" << std::endl;
@@ -146,7 +121,7 @@ inline bool readVector2Df(const char* str, const char* end, Vector2Df& out_vecto
 
     p = next_space + 1;
 
-    if (!ST::strToFloat(p, distance(p, end) + 1, out_vector.y))
+    if (!ST::String::toFloat(p, end, out_vector.y))
     {
         std::cerr << "Cannot convert to float" << std::endl;
         return false;
@@ -165,7 +140,7 @@ inline bool readFaceInfo(const char* str, const char* end, FaceInfo& out_entry)
     {
         out_entry.vertex.push_back(atoi(p));
 
-        const char* next_slash = findNext(p, end, '/');
+        const char* next_slash = ST::Common::findNext(p, end, '/');
         if (!next_slash)
         {
             std::cerr << "Cannot find slash delimeter" << std::endl;
@@ -176,7 +151,7 @@ inline bool readFaceInfo(const char* str, const char* end, FaceInfo& out_entry)
 
         out_entry.uv.push_back(atoi(p));
         
-        next_slash = findNext(p, end, '/');
+        next_slash = ST::Common::findNext(p, end, '/');
         if (!next_slash)
         {
             std::cerr << "Cannot find slash delimeter" << std::endl;
@@ -186,7 +161,7 @@ inline bool readFaceInfo(const char* str, const char* end, FaceInfo& out_entry)
 
         out_entry.normal.push_back(atoi(p));
 
-        const char* next_space = findNext(p, end, ' ');
+        const char* next_space = ST::Common::findNext(p, end, ' ');
         if (!next_space) break;
         p = next_space + 1;
     }
@@ -205,7 +180,7 @@ bool parseObjFile(const char* file_data, uint64_t size,
 
     while (p < data_end)
     {
-        const char* newline_pos = findNext(p, data_end, '\n');
+        const char* newline_pos = ST::Common::findNext(p, data_end, '\n');
 
         if (!newline_pos)
         {
@@ -214,11 +189,11 @@ bool parseObjFile(const char* file_data, uint64_t size,
             return false;
         }
 
-        uint64_t d = distance(p, newline_pos);
+        uint64_t d = ST::Common::distance(p, newline_pos);
 
         if (d > 2 && p[0] == 'v' && p[1] == ' ') // vertex
         {
-            if (count(p, newline_pos, ' ') != 3)
+            if (ST::Common::count(p, newline_pos, ' ') != 3)
             {
                 std::cerr << "Line: '" << line_n << "': ";
                 std::cerr << "Vertex entry doesn't match syntax" << std::endl;
@@ -237,7 +212,7 @@ bool parseObjFile(const char* file_data, uint64_t size,
         }
         else if (d > 3 && p[0] == 'v' && p[1] == 't' && p[2] == ' ') // UV
         {
-            if (count(p, newline_pos, ' ') != 2)
+            if (ST::Common::count(p, newline_pos, ' ') != 2)
             {
                 std::cerr << "Line: '" << line_n << "': ";
                 std::cerr << "UV entry doesn't match syntax" << std::endl;
@@ -256,7 +231,7 @@ bool parseObjFile(const char* file_data, uint64_t size,
         }
         else if (d > 3 && p[0] == 'v' && p[1] == 'n' && p[2] == ' ') // normal
         {
-            if (count(p, newline_pos, ' ') != 3)
+            if (ST::Common::count(p, newline_pos, ' ') != 3)
             {
                 std::cerr << "Line: '" << line_n << "': ";
                 std::cerr << "Normal entry doesn't match syntax" << std::endl;
