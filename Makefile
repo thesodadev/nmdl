@@ -1,22 +1,28 @@
 BIN_NAME = nobj
+SRC_DIR = src
+BUILD_DIR = build
 
-SRC_FILES = nobj.cpp
-OBJ_FILES = $(addsuffix .o,$(basename $(SRC_FILES)))
+SRC_FILES = main.cpp nmdl_writer.cpp obj_reader.cpp
+
+SRC_OBJ_FILES = $(patsubst %,$(BUILD_DIR)/%,$(addsuffix .o,$(basename $(SRC_FILES))))
+BIN_PATH = $(BUILD_DIR)/$(BIN_NAME)
 
 INCLUDE_DIRS = -I$(STEROIDS_DIR)/include
 
 CXXFLAGS = -std=c++2a -Wall -O2
 
-$(BIN_NAME): $(OBJ_FILES)
+$(BIN_PATH): $(SRC_OBJ_FILES)
 	$(CXX) $^ -o $@
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -c $^ -o $@
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
 .PHONY: all clean build rebuild
 
 all: build
-build: $(BIN_NAME)
+build: path_builder $(BIN_PATH)
 rebuild: clean build
 clean:
-	rm -rf *.o $(BIN_NAME)
+	rm -rf $(BUILD_DIR)
+path_builder:
+	mkdir -p $(BUILD_DIR)
