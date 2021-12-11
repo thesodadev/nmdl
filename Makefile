@@ -1,4 +1,4 @@
-BIN_NAME = nobj
+BIN_NAME = nmdl
 SRC_DIR = src
 BUILD_DIR = build
 
@@ -17,7 +17,7 @@ $(BIN_PATH): $(SRC_OBJ_FILES)
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
-.PHONY: all clean build rebuild
+.PHONY: all clean build rebuild install
 
 all: build
 build: path_builder $(BIN_PATH)
@@ -26,3 +26,11 @@ clean:
 	rm -rf $(BUILD_DIR)
 path_builder:
 	mkdir -p $(BUILD_DIR)
+
+ifeq ($(PREFIX),)
+    PREFIX := /usr/local
+endif
+
+install: $(BIN_PATH)
+	install -d $(DESTDIR)$(PREFIX)/bin/
+	install -m 755 $(BIN_PATH) $(DESTDIR)$(PREFIX)/bin/
