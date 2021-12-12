@@ -7,8 +7,6 @@ SRC_FILES = main.cpp nmdl_writer.cpp obj_reader.cpp
 SRC_OBJ_FILES = $(patsubst %,$(BUILD_DIR)/%,$(addsuffix .o,$(basename $(SRC_FILES))))
 BIN_PATH = $(BUILD_DIR)/$(BIN_NAME)
 
-INCLUDE_DIRS = -I$(STEROIDS_DIR)/include
-
 CXXFLAGS = -std=c++2a -Wall -O2
 
 $(BIN_PATH): $(SRC_OBJ_FILES)

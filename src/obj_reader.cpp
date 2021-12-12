@@ -1,8 +1,8 @@
 #include "obj_reader.h"
 
-#include <st/string.h>
-#include <st/common.h>
-#include <st/math.h>
+#include <steroids/string.h>
+#include <steroids/common.h>
+#include <steroids/math.h>
 
 namespace {
 
